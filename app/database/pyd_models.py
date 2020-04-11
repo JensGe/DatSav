@@ -25,6 +25,7 @@ class Url(BasisModel):
     url: HttpUrl
     fqdn: str
 
+    url_discovery_date: datetime = None
     url_last_visited: datetime = None
     url_blacklisted: bool = None
     url_bot_excluded: bool = None
@@ -61,6 +62,4 @@ class FrontierResponse(BasisModel):
 
 class SubmitFrontier(BasisModel):
     uuid: str
-    url_frontiers_count: int = c.url_frontier_count
-    urls_count: int = c.urls_count
     url_frontiers: List[UrlFrontier] = []

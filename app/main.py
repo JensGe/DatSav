@@ -32,6 +32,7 @@ def get_db():
 
 @app.post(
     "/submit/",
+    status_code=status.HTTP_202_ACCEPTED,
     tags=["Submission"],
     summary="Submit URLs",
 )
