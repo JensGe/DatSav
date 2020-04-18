@@ -39,12 +39,14 @@ def get_db():
 async def submit_frontier(submission: pyd_models.SubmitFrontier,
                           background_tasks: BackgroundTasks,
                           db: Session = Depends(get_db)):
+    # todo docs
     """
     Submit a List of FQDNs and URLs
 
-    - **crawler_uuid**: Your crawlers UUID
+        - **crawler_uuid**: Your crawlers UUID
     - **fqdn_frontier**: List of FQDNs including URLs
     """
+
 
     background_tasks.add_task(submit.save_new_frontier, db, submission)
 

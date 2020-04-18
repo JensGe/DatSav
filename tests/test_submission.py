@@ -88,40 +88,18 @@ def generate_example_submission(uuid):
 
 
 def get_example_submission_dict(uuid):
-    return {
-        "uuid": uuid,
-        "url_frontiers": [
-            {
-                "fqdn": example_domain_com,
-                "tld": "com",
-                "fqdn_last_ipv4": "123.123.123.123",
-                "url_list": [
-                    {
-                        "url": "https://www.example.com/abcefg",
-                        "fqdn": example_domain_com,
-                    },
-                    {
-                        "url": "https://www.example.com/hijklm",
-                        "fqdn": example_domain_com,
-                    },
-                ],
-            },
-            {
-                "fqdn": example_domain_de,
-                "tld": "de",
-                "url_list": [
-                    {
-                        "url": "https://www.example.de/abcefg",
-                        "fqdn": example_domain_de,
-                    },
-                    {
-                        "url": "https://www.example.de/hijklm",
-                        "fqdn": example_domain_de,
-                    },
-                ],
-            },
-        ],
-    }
+    return (
+        {
+            "uuid": uuid,
+            "urls_count": 4,
+            "urls": [
+                {"url": "https://www.example.com/abcefg", "fqdn": example_domain_com},
+                {"url": "https://www.example.com/hijklm", "fqdn": example_domain_com},
+                {"url": "https://www.example.de/abcefg", "fqdn": example_domain_de},
+                {"url": "https://www.example.de/hijklm", "fqdn": example_domain_de},
+            ],
+        },
+    )
 
 
 def test_unexplored_submission():
