@@ -23,38 +23,34 @@ def url_exists(db: Session, url):
     return False
 
 
+def get_tld(fqdn):
+    if fqdn.split(".")[-2] == "co":
+        tld = ".".join(fqdn.split(".")[-2:])
+    else:
+        tld = fqdn.split(".")[-1]
+    return tld
+
+
 def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
 
-    fqdn_insert_list = [
-        db_models.FqdnFrontier(
-            fqdn=url_frontier.fqdn,
-            tld=url_frontier.tld,
-            fqdn_last_ipv4=url_frontier.fqdn_last_ipv4,
-            fqdn_last_ipv6=url_frontier.fqdn_last_ipv6,
-            fqdn_pagerank=url_frontier.fqdn_pagerank,
-            fqdn_crawl_delay=url_frontier.fqdn_crawl_delay,
-            fqdn_url_count=url_frontier.fqdn_url_count,
-        )
-        for url_frontier in submission.url_frontiers
-        if not fqdn_exists(db, url_frontier.fqdn)
-    ]
+    fqdn_insert_list = list()
+    fqdn_update_list = list()
+
+    for url in submission.urls:
+        if not fqdn_exists(db, url.fqdn) and url.fqdn not in [
+            url.fqdn for url in fqdn_insert_list
+        ]:
+            fqdn_insert_list.append(
+                db_models.FqdnFrontier(fqdn=url.fqdn, tld=get_tld(url.fqdn))
+            )
+
+        elif fqdn_exists(db, url.fqdn):
+            fqdn_update_list.append(
+                db_models.FqdnFrontier(fqdn=url.fqdn, tld=get_tld(url.fqdn))
+            )
 
     db.bulk_save_objects(fqdn_insert_list)
     db.commit()
-
-    fqdn_update_list = [
-        db_models.FqdnFrontier(
-            fqdn=url_frontier.fqdn,
-            tld=url_frontier.tld,
-            fqdn_last_ipv4=url_frontier.fqdn_last_ipv4,
-            fqdn_last_ipv6=url_frontier.fqdn_last_ipv6,
-            fqdn_pagerank=url_frontier.fqdn_pagerank,
-            fqdn_crawl_delay=url_frontier.fqdn_crawl_delay,
-            fqdn_url_count=url_frontier.fqdn_url_count,
-        )
-        for url_frontier in submission.url_frontiers
-        if fqdn_exists(db, url_frontier.fqdn)
-    ]
 
     for item in fqdn_update_list:
         db.query(db_models.FqdnFrontier).filter(
@@ -68,36 +64,34 @@ def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
                 db_models.FqdnFrontier.fqdn_url_count: item.fqdn_url_count,
             }
         )
-
     db.commit()
 
     url_insert_list = []
     url_update_list = []
 
-    for url_frontier in submission.url_frontiers:
-        for url in url_frontier.url_list:
-            if not url_exists(db, url.url):
-                url_insert_list.append(
-                    db_models.UrlFrontier(
-                        url=url.url,
-                        fqdn=url.fqdn,
-                        url_discovery_date=url.url_discovery_date,
-                        url_last_visited=url.url_last_visited,
-                        url_blacklisted=url.url_blacklisted,
-                        url_bot_excluded=url.url_bot_excluded,
-                    )
+    for url in submission.urls:
+        if not url_exists(db, url.url):
+            url_insert_list.append(
+                db_models.UrlFrontier(
+                    url=url.url,
+                    fqdn=url.fqdn,
+                    url_discovery_date=url.url_discovery_date,
+                    url_last_visited=url.url_last_visited,
+                    url_blacklisted=url.url_blacklisted,
+                    url_bot_excluded=url.url_bot_excluded,
                 )
-            else:
-                url_update_list.append(
-                    db_models.UrlFrontier(
-                        url=url.url,
-                        fqdn=url.fqdn,
-                        url_discovery_date=url.url_discovery_date,
-                        url_last_visited=url.url_last_visited,
-                        url_blacklisted=url.url_blacklisted,
-                        url_bot_excluded=url.url_bot_excluded,
-                    )
+            )
+        else:
+            url_update_list.append(
+                db_models.UrlFrontier(
+                    url=url.url,
+                    fqdn=url.fqdn,
+                    url_discovery_date=url.url_discovery_date,
+                    url_last_visited=url.url_last_visited,
+                    url_blacklisted=url.url_blacklisted,
+                    url_bot_excluded=url.url_bot_excluded,
                 )
+            )
 
     db.bulk_save_objects(url_insert_list)
     db.commit()
@@ -111,7 +105,6 @@ def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
                 db_models.UrlFrontier.url_last_visited: item.url_last_visited,
                 db_models.UrlFrontier.url_blacklisted: item.url_blacklisted,
                 db_models.UrlFrontier.url_bot_excluded: item.url_bot_excluded,
-
             }
         )
 

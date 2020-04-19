@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from fastapi import status
 
 from app.main import app
-from app.database import database, pyd_models, db_models
+from app.database import database, pyd_models, db_models, submit
 from app.common import common_values as c
 
 from tests import values as v
@@ -19,15 +19,15 @@ client = TestClient(app)
 db = database.SessionLocal()
 
 
-def create_example_crawler():
+def create_crawler(example_uuid):
     if not (
         db.query(db_models.Crawler)
-        .filter(db_models.Crawler.uuid == v.example_uuid)
+        .filter(db_models.Crawler.uuid == example_uuid)
         .count()
     ):
         db.add(
             db_models.Crawler(
-                uuid=v.example_uuid,
+                uuid=example_uuid,
                 contact="test@example.com",
                 name="Test_Crawler",
                 reg_date=datetime.now(),
@@ -93,20 +93,57 @@ def get_example_submission_dict(uuid):
             "uuid": uuid,
             "urls_count": 4,
             "urls": [
-                {"url": "https://www.example.com/abcefg", "fqdn": example_domain_com},
-                {"url": "https://www.example.com/hijklm", "fqdn": example_domain_com},
-                {"url": "https://www.example.de/abcefg", "fqdn": example_domain_de},
-                {"url": "https://www.example.de/hijklm", "fqdn": example_domain_de},
+                {"url": "https://www.example.com/abcefg", "fqdn": "www.example.com"},
+                {"url": "https://www.example.com/hijklm", "fqdn": "www.example.com"},
+                {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
+                {"url": "https://www.example.de/hijklm", "fqdn": "www.example.de"},
             ],
         },
     )
 
 
-def test_unexplored_submission():
-    create_example_crawler()
+def test_get_tld():
+    fqdn1 = "www.example.com"
+    fqdn2 = "www.example.de"
+    fqdn3 = "www.example.co.uk"
 
-    submission_response = client.post(
-        "/submit/", json=get_example_submission_dict(v.example_uuid)
-    )
+    assert "com" == submit.get_tld(fqdn1)
+    assert "de" == submit.get_tld(fqdn2)
+    assert "co.uk" == submit.get_tld(fqdn3)
+
+
+def test_unexplored_submission():
+    create_crawler(v.example_uuid)
+
+    submission_response = client.post("/submit/", json={
+            "uuid": v.example_uuid,
+            "urls_count": 4,
+            "urls": [
+                {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
+                {"url": "https://www.example.de/hijklm", "fqdn": "www.example.de"},
+                {"url": "https://www.example.com/abcefg", "fqdn": "www.example.com"},
+                {"url": "https://www.example.com/hijklm", "fqdn": "www.example.com"}
+            ]
+        })
+
+    assert submission_response.status_code == status.HTTP_202_ACCEPTED
+
+
+def test_duplicate_fqdn_submission():
+    create_crawler(v.example_uuid)
+
+    # db.query(db_models.UrlFrontier).delete()
+    # db.query(db_models.FqdnFrontier).delete()
+
+    db.commit()
+
+    submission_response = client.post("/submit/", json={
+            "uuid": v.example_uuid,
+            "urls_count": 2,
+            "urls": [
+                {"url": "https://www.example.abc/abcefg", "fqdn": "www.example.abc"},
+                {"url": "https://www.example.abc/hijklm", "fqdn": "www.example.abc"}
+            ]
+        })
 
     assert submission_response.status_code == status.HTTP_202_ACCEPTED
