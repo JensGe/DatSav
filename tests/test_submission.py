@@ -38,6 +38,16 @@ def create_crawler(example_uuid):
         db.commit()
 
 
+def create_fqdn(fqdn):
+    if (
+        not db.query(db_models.FqdnFrontier)
+        .filter(db_models.FqdnFrontier.fqdn == fqdn)
+        .count()
+    ):
+        db.add(db_models.FqdnFrontier(fqdn=v.example_com, tld=v.example_com[-3:]))
+        db.commit()
+
+
 def generate_example_submission(uuid):
     frontier_one = pyd_models.UrlFrontier(
         fqdn=example_domain_com,
@@ -115,16 +125,19 @@ def test_get_tld():
 def test_unexplored_submission():
     create_crawler(v.example_uuid)
 
-    submission_response = client.post("/submit/", json={
+    submission_response = client.post(
+        "/submit/",
+        json={
             "uuid": v.example_uuid,
             "urls_count": 4,
             "urls": [
                 {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
                 {"url": "https://www.example.de/hijklm", "fqdn": "www.example.de"},
                 {"url": "https://www.example.com/abcefg", "fqdn": "www.example.com"},
-                {"url": "https://www.example.com/hijklm", "fqdn": "www.example.com"}
-            ]
-        })
+                {"url": "https://www.example.com/hijklm", "fqdn": "www.example.com"},
+            ],
+        },
+    )
 
     assert submission_response.status_code == status.HTTP_202_ACCEPTED
 
@@ -135,15 +148,48 @@ def test_duplicate_fqdn_submission():
     # db.query(db_models.UrlFrontier).delete()
     # db.query(db_models.FqdnFrontier).delete()
 
-    db.commit()
+    # db.commit()
 
-    submission_response = client.post("/submit/", json={
+    submission_response = client.post(
+        "/submit/",
+        json={
             "uuid": v.example_uuid,
             "urls_count": 2,
             "urls": [
                 {"url": "https://www.example.abc/abcefg", "fqdn": "www.example.abc"},
-                {"url": "https://www.example.abc/hijklm", "fqdn": "www.example.abc"}
-            ]
-        })
+                {"url": "https://www.example.abc/hijklm", "fqdn": "www.example.abc"},
+            ],
+        },
+    )
 
     assert submission_response.status_code == status.HTTP_202_ACCEPTED
+
+
+def test_release_fqdn_reservations():
+    create_crawler(v.example_uuid)
+    create_fqdn(v.example_com)
+
+    db.add(
+        db_models.CrawlerReservation(
+            crawler_uuid=v.example_uuid,
+            fqdn="www.example.com",
+            latest_return=datetime.now(),
+        )
+    )
+    db.commit()
+
+    count_before = (
+        db.query(db_models.CrawlerReservation)
+        .filter(db_models.CrawlerReservation.crawler_uuid == v.example_uuid)
+        .count()
+    )
+
+    submit.release_fqdn_reservations(db, v.example_uuid, ["www.example.com"])
+
+    count_after = (
+        db.query(db_models.CrawlerReservation)
+        .filter(db_models.CrawlerReservation.crawler_uuid == v.example_uuid)
+        .count()
+    )
+
+    assert count_before == count_after + 1

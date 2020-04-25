@@ -31,12 +31,11 @@ def get_tld(fqdn):
     return tld
 
 
-def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
-
+def create_fqdn_lists(db: Session, urls):
     fqdn_insert_list = list()
     fqdn_update_list = list()
 
-    for url in submission.urls:
+    for url in urls:
         if not fqdn_exists(db, url.fqdn) and url.fqdn not in [
             url.fqdn for url in fqdn_insert_list
         ]:
@@ -48,10 +47,15 @@ def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
             fqdn_update_list.append(
                 db_models.FqdnFrontier(fqdn=url.fqdn, tld=get_tld(url.fqdn))
             )
+    return fqdn_insert_list, fqdn_update_list
 
+
+def save_new_fqdns(db: Session, fqdn_insert_list):
     db.bulk_save_objects(fqdn_insert_list)
     db.commit()
 
+
+def update_existing_fqdns(db: Session, fqdn_update_list):
     for item in fqdn_update_list:
         db.query(db_models.FqdnFrontier).filter(
             db_models.FqdnFrontier.fqdn == item.fqdn
@@ -66,10 +70,12 @@ def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
         )
     db.commit()
 
-    url_insert_list = []
-    url_update_list = []
 
-    for url in submission.urls:
+def create_url_lists(db: Session, urls):
+    url_insert_list = list()
+    url_update_list = list()
+
+    for url in urls:
         if not url_exists(db, url.url):
             url_insert_list.append(
                 db_models.UrlFrontier(
@@ -93,9 +99,15 @@ def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
                 )
             )
 
+    return url_insert_list, url_update_list
+
+
+def save_new_urls(db: Session, url_insert_list):
     db.bulk_save_objects(url_insert_list)
     db.commit()
 
+
+def update_existing_urls(db: Session, url_update_list):
     for item in url_update_list:
         db.query(db_models.UrlFrontier).filter(
             db_models.UrlFrontier.url == item.url
@@ -109,3 +121,24 @@ def save_new_frontier(db: Session, submission: pyd_models.SubmitFrontier):
         )
 
     db.commit()
+
+
+def release_fqdn_reservations(db: Session, uuid, fqdn_update_list):
+    for fqdn in fqdn_update_list:
+        db.query(db_models.CrawlerReservation).filter(
+            db_models.CrawlerReservation.crawler_uuid == uuid
+        ).filter(db_models.CrawlerReservation.fqdn == fqdn).delete()
+    db.commit()
+    
+
+def commit_frontier(db: Session, submission: pyd_models.SubmitFrontier):
+
+    fqdn_insert_list, fqdn_update_list = create_fqdn_lists(db, submission.urls)
+    save_new_fqdns(db, fqdn_insert_list)
+    update_existing_fqdns(db, fqdn_update_list)
+
+    url_insert_list, url_update_list = create_url_lists(db, submission.urls)
+    save_new_urls(db, url_insert_list)
+    update_existing_urls(db, url_update_list)
+
+    release_fqdn_reservations(db, submission.uuid, fqdn_update_list)

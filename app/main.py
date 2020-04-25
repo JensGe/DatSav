@@ -47,7 +47,7 @@ async def submit_frontier(submission: pyd_models.SubmitFrontier,
     - **urls**: List of Url-Elements
     """
 
-    background_tasks.add_task(submit.save_new_frontier, db, submission)
+    background_tasks.add_task(submit.commit_frontier, db, submission)
 
     return Response(status_code=status.HTTP_202_ACCEPTED)
 
