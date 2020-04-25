@@ -57,17 +57,23 @@ def save_new_fqdns(db: Session, fqdn_insert_list):
 
 def update_existing_fqdns(db: Session, fqdn_update_list):
     for item in fqdn_update_list:
-        db.query(db_models.FqdnFrontier).filter(
-            db_models.FqdnFrontier.fqdn == item.fqdn
-        ).update(
-            {
-                db_models.FqdnFrontier.fqdn_last_ipv4: item.fqdn_last_ipv4,
-                db_models.FqdnFrontier.fqdn_last_ipv6: item.fqdn_last_ipv6,
-                db_models.FqdnFrontier.fqdn_pagerank: item.fqdn_pagerank,
-                db_models.FqdnFrontier.fqdn_crawl_delay: item.fqdn_crawl_delay,
-                db_models.FqdnFrontier.fqdn_url_count: item.fqdn_url_count,
-            }
+        fqdn = (
+            db.query(db_models.FqdnFrontier)
+            .filter(db_models.FqdnFrontier.fqdn == item.fqdn)
+            .first()
         )
+
+        if fqdn.fqdn_last_ipv4 is not None:
+            fqdn.fqdn_last_ipv4 = item.fqdn_last_ipv4
+        if fqdn.fqdn_last_ipv6 is not None:
+            fqdn.fqdn_last_ipv6 = item.fqdn_last_ipv6
+        if fqdn.fqdn_pagerank is not None:
+            fqdn.fqdn_pagerank = item.fqdn_pagerank
+        if fqdn.fqdn_crawl_delay is not None:
+            fqdn.fqdn_crawl_delay = item.fqdn_crawl_delay
+        if fqdn.fqdn_url_count is not None:
+            fqdn.fqdn_url_count = item.fqdn_url_count
+
     db.commit()
 
 
@@ -109,16 +115,23 @@ def save_new_urls(db: Session, url_insert_list):
 
 def update_existing_urls(db: Session, url_update_list):
     for item in url_update_list:
-        db.query(db_models.UrlFrontier).filter(
-            db_models.UrlFrontier.url == item.url
-        ).update(
-            {
-                db_models.UrlFrontier.url_discovery_date: item.url_discovery_date,
-                db_models.UrlFrontier.url_last_visited: item.url_last_visited,
-                db_models.UrlFrontier.url_blacklisted: item.url_blacklisted,
-                db_models.UrlFrontier.url_bot_excluded: item.url_bot_excluded,
-            }
+        url = (
+            db.query(db_models.UrlFrontier)
+            .filter(db_models.UrlFrontier.url == item.url)
+            .first()
         )
+
+        if item.url_discovery_date is not None:
+            url.url_discovery_date = item.url_discovery_date
+
+        if item.url_last_visited is not None:
+            url.url_last_visited = item.url_last_visited
+
+        if item.url_blacklisted is not None:
+            url.url_blacklisted = item.url_blacklisted
+
+        if item.url_bot_excluded is not None:
+            url.url_bot_excluded = item.url_bot_excluded
 
     db.commit()
 
@@ -129,7 +142,7 @@ def release_fqdn_reservations(db: Session, uuid, fqdn_update_list):
             db_models.CrawlerReservation.crawler_uuid == uuid
         ).filter(db_models.CrawlerReservation.fqdn == fqdn.fqdn).delete()
     db.commit()
-    
+
 
 def commit_frontier(db: Session, submission: pyd_models.SubmitFrontier):
 
