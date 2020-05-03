@@ -33,7 +33,7 @@ class Url(BasisModel):
 
 class UrlFrontier(BasisModel):
     fqdn: str
-    tld: enum.TLD = None
+    tld: str = None
 
     fqdn_last_ipv4: str = None
     fqdn_last_ipv6: str = None
@@ -63,4 +63,5 @@ class FrontierResponse(BasisModel):
 class SubmitFrontier(BasisModel):
     uuid: str
     urls_count: int
+    fqdns: List[UrlFrontier]
     urls: List[Url] = []

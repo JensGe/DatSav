@@ -145,11 +145,6 @@ def test_unexplored_submission():
 def test_duplicate_fqdn_submission():
     create_crawler(v.example_uuid)
 
-    # db.query(db_models.UrlFrontier).delete()
-    # db.query(db_models.FqdnFrontier).delete()
-
-    # db.commit()
-
     submission_response = client.post(
         "/submit/",
         json={

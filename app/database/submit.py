@@ -1,6 +1,7 @@
 from app.database import pyd_models, db_models
 
 from sqlalchemy.orm import Session
+from typing import List
 
 
 def fqdn_exists(db: Session, fqdn):
@@ -31,21 +32,37 @@ def get_tld(fqdn):
     return tld
 
 
-def create_fqdn_lists(db: Session, urls):
-    fqdn_insert_list = list()
-    fqdn_update_list = list()
+def create_fqdn_lists(db: Session, fqdns: List[pyd_models.UrlFrontier]):
+    fqdn_insert_list = []
+    fqdn_update_list = []
 
-    for url in urls:
-        if not fqdn_exists(db, url.fqdn) and url.fqdn not in [
+    for fqdn in fqdns:
+        if not fqdn_exists(db, fqdn.fqdn) and fqdn.fqdn not in [
             url.fqdn for url in fqdn_insert_list
         ]:
             fqdn_insert_list.append(
-                db_models.FqdnFrontier(fqdn=url.fqdn, tld=get_tld(url.fqdn))
+                db_models.FqdnFrontier(
+                    fqdn=fqdn.fqdn,
+                    tld=fqdn.tld,
+                    fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
+                    fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
+                    fqdn_url_count=fqdn.fqdn_url_count,
+                    fqdn_pagerank=fqdn.fqdn_pagerank,
+                    fqdn_crawl_delay=fqdn.fqdn_crawl_delay,
+                )
             )
 
-        elif fqdn_exists(db, url.fqdn):
+        elif fqdn_exists(db, fqdn.fqdn):
             fqdn_update_list.append(
-                db_models.FqdnFrontier(fqdn=url.fqdn, tld=get_tld(url.fqdn))
+                db_models.FqdnFrontier(
+                    fqdn=fqdn.fqdn,
+                    tld=fqdn.tld,
+                    fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
+                    fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
+                    fqdn_url_count=fqdn.fqdn_url_count,
+                    fqdn_pagerank=fqdn.fqdn_pagerank,
+                    fqdn_crawl_delay=fqdn.fqdn_crawl_delay,
+                )
             )
     return fqdn_insert_list, fqdn_update_list
 
@@ -146,7 +163,7 @@ def release_fqdn_reservations(db: Session, uuid, fqdn_update_list):
 
 def commit_frontier(db: Session, submission: pyd_models.SubmitFrontier):
 
-    fqdn_insert_list, fqdn_update_list = create_fqdn_lists(db, submission.urls)
+    fqdn_insert_list, fqdn_update_list = create_fqdn_lists(db, submission.fqdns)
     save_new_fqdns(db, fqdn_insert_list)
     update_existing_fqdns(db, fqdn_update_list)
 
