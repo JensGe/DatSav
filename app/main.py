@@ -43,7 +43,9 @@ async def submit_frontier(submission: pyd_models.SubmitFrontier,
     Submit a List of FQDNs and URLs
 
     - **crawler_uuid**: Your crawlers UUID
-    - **urls_count**: Amount of Url-Elements
+    - **fqdn_count**: Amount of FQDN-Elements
+    - **fqdns**: List of FQDN-Elements (with empty Url-List)
+    - **url_count**: Amount of Url-Elements
     - **urls**: List of Url-Elements
     """
 

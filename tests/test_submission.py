@@ -97,19 +97,42 @@ def generate_example_submission(uuid):
     return submit_frontier
 
 
-def get_example_submission_dict(uuid):
-    return (
-        {
-            "uuid": uuid,
-            "urls_count": 4,
-            "urls": [
-                {"url": "https://www.example.com/abcefg", "fqdn": "www.example.com"},
-                {"url": "https://www.example.com/hijklm", "fqdn": "www.example.com"},
-                {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
-                {"url": "https://www.example.de/hijklm", "fqdn": "www.example.de"},
-            ],
-        },
-    )
+def example_submission_dict():
+    example_submission = {
+        "uuid": v.example_uuid,
+        "fqdn_count": 2,
+        "fqdns": [
+            {
+                "fqdn": "www.example.com",
+                "tld": "com",
+                "fqdn_last_ipv4": "209.155.67.226",
+                "fqdn_last_ipv6": "2001:DB8::6440",
+                "fqdn_pagerank": 0.1,
+                "fqdn_crawl_delay": 1,
+                "fqdn_url_count": 5,
+                "url_list": [],
+            },
+            {
+                "fqdn": "www.example.de",
+                "tld": "de",
+                "fqdn_last_ipv4": "209.155.67.226",
+                "fqdn_last_ipv6": "2001:DB8::6440",
+                "fqdn_pagerank": 0.1,
+                "fqdn_crawl_delay": 1,
+                "fqdn_url_count": 5,
+                "url_list": [],
+            },
+        ],
+        "url_count": 4,
+        "urls": [
+            {"url": "https://www.example.com/abcefg", "fqdn": "www.example.com"},
+            {"url": "https://www.example.com/hijklm", "fqdn": "www.example.com"},
+            {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
+            {"url": "https://www.example.de/hijklm", "fqdn": "www.example.de"},
+        ],
+    }
+
+    return example_submission
 
 
 def test_get_tld():
@@ -149,7 +172,9 @@ def test_duplicate_fqdn_submission():
         "/submit/",
         json={
             "uuid": v.example_uuid,
-            "urls_count": 2,
+            "fqdn_count": 1,
+            "fqdns": [{"fqdn": "www.example.abc", "tld": "abc"}],
+            "url_count": 2,
             "urls": [
                 {"url": "https://www.example.abc/abcefg", "fqdn": "www.example.abc"},
                 {"url": "https://www.example.abc/hijklm", "fqdn": "www.example.abc"},
@@ -188,3 +213,9 @@ def test_release_fqdn_reservations():
     )
 
     assert count_before == count_after + 1
+
+
+def test_commit_frontier():
+    create_crawler(v.example_uuid)
+    response = client.post("/submit/", json=example_submission_dict())
+    assert response.status_code == status.HTTP_202_ACCEPTED

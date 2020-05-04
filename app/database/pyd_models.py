@@ -62,6 +62,7 @@ class FrontierResponse(BasisModel):
 
 class SubmitFrontier(BasisModel):
     uuid: str
-    urls_count: int
+    fqdn_count: int
     fqdns: List[UrlFrontier]
+    url_count: int
     urls: List[Url] = []
