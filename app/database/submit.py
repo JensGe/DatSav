@@ -80,15 +80,15 @@ def update_existing_fqdns(db: Session, fqdn_update_list):
             .first()
         )
 
-        if fqdn.fqdn_last_ipv4 is not None:
+        if item.fqdn_last_ipv4 is not None:
             fqdn.fqdn_last_ipv4 = item.fqdn_last_ipv4
-        if fqdn.fqdn_last_ipv6 is not None:
+        if item.fqdn_last_ipv6 is not None:
             fqdn.fqdn_last_ipv6 = item.fqdn_last_ipv6
-        if fqdn.fqdn_pagerank is not None:
+        if item.fqdn_pagerank is not None:
             fqdn.fqdn_pagerank = item.fqdn_pagerank
-        if fqdn.fqdn_crawl_delay is not None:
+        if item.fqdn_crawl_delay is not None:
             fqdn.fqdn_crawl_delay = item.fqdn_crawl_delay
-        if fqdn.fqdn_url_count is not None:
+        if item.fqdn_url_count is not None:
             fqdn.fqdn_url_count = item.fqdn_url_count
 
     db.commit()
