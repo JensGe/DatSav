@@ -153,7 +153,9 @@ def update_existing_urls(db: Session, url_update_list):
     db.commit()
 
 
-def release_fqdn_reservations(db: Session, uuid, fqdn_update_list):
+def release_fqdn_reservations(
+    db: Session, uuid, fqdn_update_list: List[pyd_models.UrlFrontier]
+):
     for fqdn in fqdn_update_list:
         db.query(db_models.CrawlerReservation).filter(
             db_models.CrawlerReservation.crawler_uuid == uuid

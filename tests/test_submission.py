@@ -8,7 +8,7 @@ from app.common import common_values as c
 from tests import values as v
 
 from pydantic import HttpUrl
-from datetime import datetime
+from datetime import datetime, timezone
 from time import sleep
 
 example_domain_com = "www.example.com"
@@ -152,7 +152,12 @@ def test_unexplored_submission():
         "/submit/",
         json={
             "uuid": v.example_uuid,
-            "urls_count": 4,
+            "fqdn_count": 2,
+            "fqdns": [
+                {"fqdn": "www.example.de"},
+                {"fqdn": "www.example.com"}
+            ],
+            "url_count": 4,
             "urls": [
                 {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
                 {"url": "https://www.example.de/hijklm", "fqdn": "www.example.de"},
@@ -161,7 +166,6 @@ def test_unexplored_submission():
             ],
         },
     )
-
     assert submission_response.status_code == status.HTTP_202_ACCEPTED
 
 
@@ -186,6 +190,7 @@ def test_duplicate_fqdn_submission():
 
 
 def test_release_fqdn_reservations():
+
     create_crawler(v.example_uuid)
     create_fqdn(v.example_com)
 
@@ -193,7 +198,7 @@ def test_release_fqdn_reservations():
         db_models.CrawlerReservation(
             crawler_uuid=v.example_uuid,
             fqdn="www.example.com",
-            latest_return=datetime.now(),
+            latest_return=datetime.now(tz=timezone.utc),
         )
     )
     db.commit()
@@ -203,8 +208,8 @@ def test_release_fqdn_reservations():
         .filter(db_models.CrawlerReservation.crawler_uuid == v.example_uuid)
         .count()
     )
-
-    submit.release_fqdn_reservations(db, v.example_uuid, ["www.example.com"])
+    url_frontier = pyd_models.UrlFrontier(fqdn="www.example.com")
+    submit.release_fqdn_reservations(db, v.example_uuid, [url_frontier])
 
     count_after = (
         db.query(db_models.CrawlerReservation)
