@@ -27,6 +27,8 @@ class Url(BasisModel):
 
     url_discovery_date: datetime = None
     url_last_visited: datetime = None
+    url_last_modified: datetime = None
+    url_eTag: str = None
     url_blacklisted: bool = None
     url_bot_excluded: bool = None
 

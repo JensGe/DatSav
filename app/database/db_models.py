@@ -47,6 +47,8 @@ class UrlFrontier(Base):
 
     url_discovery_date = Column(DateTime(timezone=True))
     url_last_visited = Column(DateTime(timezone=True))
+    url_last_modified = Column(DateTime(timezone=True))
+    url_eTag = Column(String)
     url_blacklisted = Column(Boolean)
     url_bot_excluded = Column(Boolean)
 
