@@ -25,10 +25,9 @@ class Url(BasisModel):
     url: HttpUrl
     fqdn: str
 
+    url_pagerank: float = None
     url_discovery_date: datetime = None
     url_last_visited: datetime = None
-    url_last_modified: datetime = None
-    url_eTag: str = None
     url_blacklisted: bool = None
     url_bot_excluded: bool = None
 
@@ -40,7 +39,7 @@ class UrlFrontier(BasisModel):
     fqdn_last_ipv4: str = None
     fqdn_last_ipv6: str = None
 
-    fqdn_pagerank: float = None
+    fqdn_avg_pagerank: float = None
     fqdn_crawl_delay: int = None
     fqdn_url_count: int = None
 

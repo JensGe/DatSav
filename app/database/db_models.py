@@ -35,7 +35,7 @@ class FqdnFrontier(Base):
     fqdn_last_ipv6 = Column(String)
 
     fqdn_url_count = Column(Integer)
-    fqdn_pagerank = Column(Float)
+    fqdn_avg_pagerank = Column(Float)
     fqdn_crawl_delay = Column(Integer)
 
 
@@ -45,10 +45,9 @@ class UrlFrontier(Base):
     fqdn = Column(String, ForeignKey(c.fqdn_frontier_pk))
     url = Column(String, primary_key=True, index=True)
 
+    url_pagerank = Column(Float)
     url_discovery_date = Column(DateTime(timezone=True))
     url_last_visited = Column(DateTime(timezone=True))
-    url_last_modified = Column(DateTime(timezone=True))
-    url_eTag = Column(String)
     url_blacklisted = Column(Boolean)
     url_bot_excluded = Column(Boolean)
 
