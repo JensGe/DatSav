@@ -47,7 +47,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.UrlFrontier]):
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
                     fqdn_url_count=fqdn.fqdn_url_count,
-                    fqdn_pagerank=fqdn.fqdn_pagerank,
+                    fqdn_avg_pagerank=fqdn.fqdn_avg_pagerank,
                     fqdn_crawl_delay=fqdn.fqdn_crawl_delay,
                 )
             )
@@ -60,7 +60,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.UrlFrontier]):
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
                     fqdn_url_count=fqdn.fqdn_url_count,
-                    fqdn_pagerank=fqdn.fqdn_pagerank,
+                    fqdn_avg_pagerank=fqdn.fqdn_avg_pagerank,
                     fqdn_crawl_delay=fqdn.fqdn_crawl_delay,
                 )
             )
@@ -84,8 +84,8 @@ def update_existing_fqdns(db: Session, fqdn_update_list):
             fqdn.fqdn_last_ipv4 = item.fqdn_last_ipv4
         if item.fqdn_last_ipv6 is not None:
             fqdn.fqdn_last_ipv6 = item.fqdn_last_ipv6
-        if item.fqdn_pagerank is not None:
-            fqdn.fqdn_pagerank = item.fqdn_pagerank
+        if item.fqdn_avg_pagerank is not None:
+            fqdn.fqdn_avg_pagerank = item.fqdn_avg_pagerank
         if item.fqdn_crawl_delay is not None:
             fqdn.fqdn_crawl_delay = item.fqdn_crawl_delay
         if item.fqdn_url_count is not None:
@@ -104,6 +104,7 @@ def create_url_lists(db: Session, urls):
                 db_models.UrlFrontier(
                     url=url.url,
                     fqdn=url.fqdn,
+                    url_pagerank=url.url_pagerank,
                     url_discovery_date=url.url_discovery_date,
                     url_last_visited=url.url_last_visited,
                     url_blacklisted=url.url_blacklisted,
@@ -115,6 +116,7 @@ def create_url_lists(db: Session, urls):
                 db_models.UrlFrontier(
                     url=url.url,
                     fqdn=url.fqdn,
+                    url_pagerank=url.url_pagerank,
                     url_discovery_date=url.url_discovery_date,
                     url_last_visited=url.url_last_visited,
                     url_blacklisted=url.url_blacklisted,
@@ -138,6 +140,9 @@ def update_existing_urls(db: Session, url_update_list):
             .first()
         )
 
+        if item.url_pagerank is not None:
+            url.url_pagerank = item.url_pagerank
+
         if item.url_discovery_date is not None:
             url.url_discovery_date = item.url_discovery_date
 
@@ -154,7 +159,7 @@ def update_existing_urls(db: Session, url_update_list):
 
 
 def release_fqdn_reservations(
-    db: Session, uuid, fqdn_update_list: List[pyd_models.UrlFrontier]
+    db: Session, uuid, fqdn_update_list: List[db_models.FqdnFrontier]
 ):
     for fqdn in fqdn_update_list:
         db.query(db_models.CrawlerReservation).filter(
