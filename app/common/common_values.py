@@ -1,5 +1,5 @@
 # API Endpoints
-crawler_endpoint = "/crawlers/"
+fetcher_endpoint = "/fetchers/"
 database_endpoint = "/database/"
 stats_endpoint = "/stats/"
 frontier_endpoint = "/frontiers/"

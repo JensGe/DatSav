@@ -14,7 +14,7 @@ class BasisModel(BaseModel):
 
 # Frontier
 class FrontierRequest(BasisModel):
-    crawler_uuid: UUID
+    fetcher_uuid: UUID
     amount: int = c.frontier_amount
     length: int = c.frontier_length
     short_term_mode: enum.STF = enum.STF.random

@@ -13,8 +13,8 @@ from app.database.database import Base
 from app.common import common_values as c
 
 
-class Crawler(Base):
-    __tablename__ = "crawler"
+class Fetcher(Base):
+    __tablename__ = "fetcher"
 
     uuid = Column(String, primary_key=True, index=True)
     contact = Column(String)
@@ -52,11 +52,11 @@ class Url(Base):
     url_bot_excluded = Column(Boolean)
 
 
-class CrawlerReservation(Base):
-    __tablename__ = "crawler_reservations"
+class FetcherReservation(Base):
+    __tablename__ = "fetcher_reservations"
 
-    crawler_uuid = Column(
-        String, ForeignKey("crawler.uuid", ondelete="CASCADE"), primary_key=True
+    fetcher_uuid = Column(
+        String, ForeignKey("fetcher.uuid", ondelete="CASCADE"), primary_key=True
     )
     fqdn = Column(String, ForeignKey(c.fqdn_frontier_pk), primary_key=True)
     latest_return = Column(DateTime(timezone=True))

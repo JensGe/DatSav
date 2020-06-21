@@ -162,9 +162,9 @@ def release_fqdn_reservations(
     db: Session, uuid, fqdn_update_list: List[db_models.Frontier]
 ):
     for fqdn in fqdn_update_list:
-        db.query(db_models.CrawlerReservation).filter(
-            db_models.CrawlerReservation.crawler_uuid == uuid
-        ).filter(db_models.CrawlerReservation.fqdn == fqdn.fqdn).delete()
+        db.query(db_models.FetcherReservation).filter(
+            db_models.FetcherReservation.fetcher_uuid == uuid
+        ).filter(db_models.FetcherReservation.fqdn == fqdn.fqdn).delete()
     db.commit()
 
 

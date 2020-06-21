@@ -21,12 +21,12 @@ db = database.SessionLocal()
 
 def create_crawler(example_uuid):
     if not (
-        db.query(db_models.Crawler)
-        .filter(db_models.Crawler.uuid == example_uuid)
+        db.query(db_models.Fetcher)
+        .filter(db_models.Fetcher.uuid == example_uuid)
         .count()
     ):
         db.add(
-            db_models.Crawler(
+            db_models.Fetcher(
                 uuid=example_uuid,
                 contact="test@example.com",
                 name="Test_Crawler",
@@ -195,7 +195,7 @@ def test_release_fqdn_reservations():
     create_fqdn(v.example_com)
 
     db.add(
-        db_models.CrawlerReservation(
+        db_models.FetcherReservation(
             crawler_uuid=v.example_uuid,
             fqdn="www.example.com",
             latest_return=datetime.now(tz=timezone.utc),
@@ -204,16 +204,16 @@ def test_release_fqdn_reservations():
     db.commit()
 
     count_before = (
-        db.query(db_models.CrawlerReservation)
-        .filter(db_models.CrawlerReservation.crawler_uuid == v.example_uuid)
+        db.query(db_models.FetcherReservation)
+        .filter(db_models.FetcherReservation.fetcher_uuid == v.example_uuid)
         .count()
     )
     url_frontier = pyd_models.Frontier(fqdn="www.example.com")
     submit.release_fqdn_reservations(db, v.example_uuid, [url_frontier])
 
     count_after = (
-        db.query(db_models.CrawlerReservation)
-        .filter(db_models.CrawlerReservation.crawler_uuid == v.example_uuid)
+        db.query(db_models.FetcherReservation)
+        .filter(db_models.FetcherReservation.fetcher_uuid == v.example_uuid)
         .count()
     )
 
