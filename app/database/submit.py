@@ -6,8 +6,8 @@ from typing import List
 
 def fqdn_exists(db: Session, fqdn):
     if (
-        db.query(db_models.FqdnFrontier)
-        .filter(db_models.FqdnFrontier.fqdn == fqdn)
+        db.query(db_models.Frontier)
+        .filter(db_models.Frontier.fqdn == fqdn)
         .count()
         > 0
     ):
@@ -17,7 +17,7 @@ def fqdn_exists(db: Session, fqdn):
 
 def url_exists(db: Session, url):
     if (
-        db.query(db_models.UrlFrontier).filter(db_models.UrlFrontier.url == url).count()
+        db.query(db_models.Url).filter(db_models.Url.url == url).count()
         > 0
     ):
         return True
@@ -41,7 +41,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
             url.fqdn for url in fqdn_insert_list
         ]:
             fqdn_insert_list.append(
-                db_models.FqdnFrontier(
+                db_models.Frontier(
                     fqdn=fqdn.fqdn,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
@@ -54,7 +54,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
 
         elif fqdn_exists(db, fqdn.fqdn):
             fqdn_update_list.append(
-                db_models.FqdnFrontier(
+                db_models.Frontier(
                     fqdn=fqdn.fqdn,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
@@ -75,8 +75,8 @@ def save_new_fqdns(db: Session, fqdn_insert_list):
 def update_existing_fqdns(db: Session, fqdn_update_list):
     for item in fqdn_update_list:
         fqdn = (
-            db.query(db_models.FqdnFrontier)
-            .filter(db_models.FqdnFrontier.fqdn == item.fqdn)
+            db.query(db_models.Frontier)
+            .filter(db_models.Frontier.fqdn == item.fqdn)
             .first()
         )
 
@@ -101,7 +101,7 @@ def create_url_lists(db: Session, urls):
     for url in urls:
         if not url_exists(db, url.url):
             url_insert_list.append(
-                db_models.UrlFrontier(
+                db_models.Url(
                     url=url.url,
                     fqdn=url.fqdn,
                     url_pagerank=url.url_pagerank,
@@ -113,7 +113,7 @@ def create_url_lists(db: Session, urls):
             )
         else:
             url_update_list.append(
-                db_models.UrlFrontier(
+                db_models.Url(
                     url=url.url,
                     fqdn=url.fqdn,
                     url_pagerank=url.url_pagerank,
@@ -135,8 +135,8 @@ def save_new_urls(db: Session, url_insert_list):
 def update_existing_urls(db: Session, url_update_list):
     for item in url_update_list:
         url = (
-            db.query(db_models.UrlFrontier)
-            .filter(db_models.UrlFrontier.url == item.url)
+            db.query(db_models.Url)
+            .filter(db_models.Url.url == item.url)
             .first()
         )
 
@@ -159,7 +159,7 @@ def update_existing_urls(db: Session, url_update_list):
 
 
 def release_fqdn_reservations(
-    db: Session, uuid, fqdn_update_list: List[db_models.FqdnFrontier]
+    db: Session, uuid, fqdn_update_list: List[db_models.Frontier]
 ):
     for fqdn in fqdn_update_list:
         db.query(db_models.CrawlerReservation).filter(

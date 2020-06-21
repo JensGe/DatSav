@@ -40,11 +40,11 @@ def create_crawler(example_uuid):
 
 def create_fqdn(fqdn):
     if (
-        not db.query(db_models.FqdnFrontier)
-        .filter(db_models.FqdnFrontier.fqdn == fqdn)
+        not db.query(db_models.Frontier)
+        .filter(db_models.Frontier.fqdn == fqdn)
         .count()
     ):
-        db.add(db_models.FqdnFrontier(fqdn=v.example_com, tld=v.example_com[-3:]))
+        db.add(db_models.Frontier(fqdn=v.example_com, tld=v.example_com[-3:]))
         db.commit()
 
 
