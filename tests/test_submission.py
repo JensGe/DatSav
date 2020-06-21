@@ -49,7 +49,7 @@ def create_fqdn(fqdn):
 
 
 def generate_example_submission(uuid):
-    frontier_one = pyd_models.UrlFrontier(
+    frontier_one = pyd_models.Frontier(
         fqdn=example_domain_com,
         tld="com",
         fqdn_last_ipv4="123.123.123.123",
@@ -71,7 +71,7 @@ def generate_example_submission(uuid):
         ],
     )
 
-    frontier_two = pyd_models.UrlFrontier(
+    frontier_two = pyd_models.Frontier(
         fqdn=example_domain_de,
         tld="de",
         url_list=[
@@ -208,7 +208,7 @@ def test_release_fqdn_reservations():
         .filter(db_models.CrawlerReservation.crawler_uuid == v.example_uuid)
         .count()
     )
-    url_frontier = pyd_models.UrlFrontier(fqdn="www.example.com")
+    url_frontier = pyd_models.Frontier(fqdn="www.example.com")
     submit.release_fqdn_reservations(db, v.example_uuid, [url_frontier])
 
     count_after = (

@@ -32,8 +32,9 @@ class Url(BasisModel):
     url_bot_excluded: bool = None
 
 
-class UrlFrontier(BasisModel):
+class Frontier(BasisModel):
     fqdn: str
+    fqdn_hash: str = None
     tld: str = None
 
     fqdn_last_ipv4: str = None
@@ -54,16 +55,18 @@ class URLReference(BasisModel):
 
 class FrontierResponse(BasisModel):
     uuid: str
+    short_term_mode: enum.STF = None
+    long_term_mode: enum.LTF = None
     response_url: HttpUrl = None
     latest_return: datetime = None
     url_frontiers_count: int = c.url_frontier_count
     urls_count: int = c.urls_count
-    url_frontiers: List[UrlFrontier] = []
+    url_frontiers: List[Frontier] = []
 
 
 class SubmitFrontier(BasisModel):
     uuid: str
     fqdn_count: int
-    fqdns: List[UrlFrontier]
+    fqdns: List[Frontier]
     url_count: int
     urls: List[Url] = []

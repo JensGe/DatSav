@@ -32,7 +32,7 @@ def get_tld(fqdn):
     return tld
 
 
-def create_fqdn_lists(db: Session, fqdns: List[pyd_models.UrlFrontier]):
+def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
     fqdn_insert_list = []
     fqdn_update_list = []
 
