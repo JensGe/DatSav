@@ -34,7 +34,7 @@ class Url(BasisModel):
 
 class Frontier(BasisModel):
     fqdn: str
-    fqdn_hash: str = None
+    fetcher_idx: str = None
     tld: str = None
 
     fqdn_last_ipv4: str = None
