@@ -43,11 +43,11 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
         if not fqdn_exists(db, fqdn.fqdn) and fqdn.fqdn not in [
             url.fqdn for url in fqdn_insert_list
         ]:
-            fqdn_hash = hash(fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
+            fetcher_idx = hash(fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
             fqdn_insert_list.append(
                 db_models.Frontier(
                     fqdn=fqdn.fqdn,
-                    fqdn_hash=fqdn_hash,
+                    fetcher_idx=fetcher_idx,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
