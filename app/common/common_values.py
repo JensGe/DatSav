@@ -18,7 +18,7 @@ url_frontier_count = 0
 urls_count = 0
 
 fqdn_amount = 20
-crawler = 3
+fetcher = 3
 min_url = 10
 max_url = 100
 visited_ratio = 0.0

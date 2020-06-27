@@ -27,7 +27,7 @@ class Fetcher(Base):
 class Frontier(Base):
     __tablename__ = "frontiers"
 
-    fqdn_hash = Column(String)
+    fetcher_idx = Column(Integer)
     fqdn = Column(String, primary_key=True, index=True)
     tld = Column(String, index=True)
 
@@ -77,8 +77,9 @@ class FetcherSettings(Base):
     fqdn_amount = Column(Integer)
     url_amount = Column(Integer)
 
-    long_term_mode = Column(String)
-    short_term_mode = Column(String)
+    long_term_prio_mode = Column(String)
+    long_term_part_mode = Column(String)
+    short_term_prio_mode = Column(String)
 
     min_links_per_page = Column(Integer)
     max_links_per_page = Column(Integer)

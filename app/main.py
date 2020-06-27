@@ -1,5 +1,3 @@
-from typing import List
-
 from app.database import db_models, pyd_models, database, submit
 
 from fastapi import FastAPI, Depends, status, BackgroundTasks
@@ -42,7 +40,7 @@ async def submit_frontier(submission: pyd_models.SubmitFrontier,
     """
     Submit a List of FQDNs and URLs
 
-    - **fetcher_uuid**: Your crawlers UUID
+    - **fetcher_uuid**: Your fetchers UUID
     - **fqdn_count**: Amount of FQDN-Elements
     - **fqdns**: List of FQDN-Elements (with empty Url-List)
     - **url_count**: Amount of Url-Elements
