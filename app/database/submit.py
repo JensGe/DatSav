@@ -38,16 +38,15 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
 
     fetcher_amount = db.query(db_models.Fetcher).count()
 
-
     for fqdn in fqdns:
+        fetcher_idx = hash(fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
         if not fqdn_exists(db, fqdn.fqdn) and fqdn.fqdn not in [
             url.fqdn for url in fqdn_insert_list
         ]:
-            fetcher_idx = hash(fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
             fqdn_insert_list.append(
                 db_models.Frontier(
                     fqdn=fqdn.fqdn,
-                    fetcher_idx=fetcher_idx,
+                    fqdn_hash_fetcher_index=fetcher_idx,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
@@ -61,6 +60,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
             fqdn_update_list.append(
                 db_models.Frontier(
                     fqdn=fqdn.fqdn,
+                    fqdn_hash_fetcher_index=fetcher_idx,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
@@ -72,7 +72,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
     return fqdn_insert_list, fqdn_update_list
 
 
-def save_new_fqdns(db: Session, fqdn_insert_list):
+def save_insert_table(db: Session, fqdn_insert_list):
     db.bulk_save_objects(fqdn_insert_list)
     db.commit()
 
@@ -132,11 +132,6 @@ def create_url_lists(db: Session, urls):
     return url_insert_list, url_update_list
 
 
-def save_new_urls(db: Session, url_insert_list):
-    db.bulk_save_objects(url_insert_list)
-    db.commit()
-
-
 def update_existing_urls(db: Session, url_update_list):
     for item in url_update_list:
         url = (
@@ -176,11 +171,11 @@ def release_fqdn_reservations(
 def commit_frontier(db: Session, submission: pyd_models.SubmitFrontier):
 
     fqdn_insert_list, fqdn_update_list = create_fqdn_lists(db, submission.fqdns)
-    save_new_fqdns(db, fqdn_insert_list)
+    save_insert_table(db, fqdn_insert_list)
     update_existing_fqdns(db, fqdn_update_list)
 
     url_insert_list, url_update_list = create_url_lists(db, submission.urls)
-    save_new_urls(db, url_insert_list)
+    save_insert_table(db, url_insert_list)
     update_existing_urls(db, url_update_list)
 
     release_fqdn_reservations(db, submission.uuid, fqdn_update_list)

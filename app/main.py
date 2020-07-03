@@ -12,7 +12,7 @@ db_models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI(
     title="DatSav",
     description="Submission Point for Distributed Fetcher to Save newly found URLs",
-    version="0.1.5",
+    version="0.1.6",
     redoc_url=None,
 )
 

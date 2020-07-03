@@ -3,7 +3,7 @@ from enum import Enum
 
 class LONGPRIO(str, Enum):
     """
-    Long Term Frontier Strategy
+    Strategy for Prioritizing the Long Term Frontier
     """
     random = "random"
     large_sites_first = "large_sites_first"
@@ -26,7 +26,7 @@ class LONGPART(str, Enum):
 
 class SHORTPRIO(str, Enum):
     """
-    Short Term Frontier Strategy
+    Strategy for Prioritizing the Short Term Frontier
     """
     random = "random"
     old_pages_first = "old_pages_first"

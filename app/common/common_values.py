@@ -3,11 +3,14 @@ fetcher_endpoint = "/fetchers/"
 database_endpoint = "/database/"
 stats_endpoint = "/stats/"
 frontier_endpoint = "/frontiers/"
+settings_endpoint = "/settings/"
+urls_endpoint = "/urls/"
 
 
 # DB_Models
-url_frontier_pk = "urls.url"
-fqdn_frontier_pk = "frontiers.fqdn"
+db_url_pk = "urls.url"
+db_fqdn_pk = "frontiers.fqdn"
+db_fetcher_pk = "fetcher.uuid"
 
 
 # Pydantic Model Values
@@ -24,6 +27,8 @@ max_url = 100
 visited_ratio = 0.0
 connections = 0
 
+# Fetcher Settings
+ch_hash_amount = 32
 
 # Frontier Settings
 response_url = "http://ec2-18-195-144-15.eu-central-1.compute.amazonaws.com/submit/"

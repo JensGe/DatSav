@@ -15,8 +15,11 @@ class BasisModel(BaseModel):
 # Fetcher
 class Fetcher(BasisModel):
     uuid: UUID
+    fetcher_hashes: List[int] = []
+
     contact: EmailStr
     name: str
+
     reg_date: datetime
     location: str = None
     tld_preference: str = None
@@ -44,8 +47,10 @@ class DeleteFetcher(BasisModel):
 # Frontier
 class FrontierRequest(BasisModel):
     fetcher_uuid: UUID
+
     amount: int = c.frontier_amount
     length: int = c.frontier_length
+
     short_term_prio_mode: enum.SHORTPRIO = enum.SHORTPRIO.random
     long_term_prio_mode: enum.LONGPRIO = enum.LONGPRIO.random
     long_term_part_mode: enum.LONGPART = enum.LONGPART.none
@@ -64,8 +69,10 @@ class Url(BasisModel):
 
 class Frontier(BasisModel):
     fqdn: str
-    fetcher_idx: int = None
     tld: str = None
+
+    fqdn_hash: int = None
+    fqdn_hash_fetcher_index: int = None
 
     fqdn_last_ipv4: str = None
     fqdn_last_ipv6: str = None
@@ -85,13 +92,17 @@ class URLReference(BasisModel):
 
 class FrontierResponse(BasisModel):
     uuid: str
+
     short_term_prio_mode: enum.SHORTPRIO = None
     long_term_prio_mode: enum.LONGPRIO = None
     long_term_part_mode: enum.LONGPART = None
+
     response_url: HttpUrl = None
     latest_return: datetime = None
+
     url_frontiers_count: int = c.url_frontier_count
     urls_count: int = c.urls_count
+
     url_frontiers: List[Frontier] = []
 
 
@@ -109,6 +120,7 @@ class GenerateRequest(BasisModel):
     fqdn_amount: int = c.fqdn_amount
     min_url_amount: int = c.min_url
     max_url_amount: int = c.max_url
+
     visited_ratio: float = c.visited_ratio
     connection_amount: int = c.connections
     fixed_crawl_delay: int = None
@@ -117,9 +129,11 @@ class GenerateRequest(BasisModel):
 class StatsResponse(BasisModel):
     fetcher_amount: int
     frontier_amount: int
+
     url_amount: int
     url_ref_amount: int
     reserved_fqdn_amount: int
+
     avg_freshness: str
     visited_ratio: float
     fqdn_hash_range: float
@@ -127,6 +141,7 @@ class StatsResponse(BasisModel):
 
 class DeleteDatabase(BasisModel):
     delete_url_refs: bool = False
+    delete_fetcher_hashes: bool = False
     delete_fetchers: bool = False
     delete_urls: bool = False
     delete_fqdns: bool = False
@@ -143,7 +158,6 @@ class RandomUrls(BasisModel):
 
 
 class FetcherSettings(BasisModel):
-
     logging_mode: int = 20
     crawling_speed_factor: float = 10
     default_crawl_delay: int = 5
@@ -166,3 +180,9 @@ class FetcherSettings(BasisModel):
     new_vs_existing_threshold: float = 1.0
 
 
+class SimulatedParsedList(BasisModel):
+    uuid: str
+    fqdn_count: int
+    fqdns: List[Frontier]
+    url_count: int
+    urls: List[Url]
