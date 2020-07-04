@@ -9,7 +9,6 @@ from tests import values as v
 
 from pydantic import HttpUrl
 from datetime import datetime, timezone
-from time import sleep
 
 example_domain_com = "www.example.com"
 example_domain_de = "www.example.de"
@@ -38,12 +37,18 @@ def create_crawler(example_uuid):
         db.commit()
 
 
+def delete_db():
+    db.query(db_models.FetcherReservation).delete()
+    db.query(db_models.FetcherHash).delete()
+    db.query(db_models.URLRef).delete()
+    db.query(db_models.Fetcher).delete()
+    db.query(db_models.Url).delete()
+    db.query(db_models.Frontier).delete()
+    db.commit()
+
+
 def create_fqdn(fqdn):
-    if (
-        not db.query(db_models.Frontier)
-        .filter(db_models.Frontier.fqdn == fqdn)
-        .count()
-    ):
+    if not db.query(db_models.Frontier).filter(db_models.Frontier.fqdn == fqdn).count():
         db.add(db_models.Frontier(fqdn=v.example_com, tld=v.example_com[-3:]))
         db.commit()
 
@@ -153,10 +158,7 @@ def test_unexplored_submission():
         json={
             "uuid": v.example_uuid,
             "fqdn_count": 2,
-            "fqdns": [
-                {"fqdn": "www.example.de"},
-                {"fqdn": "www.example.com"}
-            ],
+            "fqdns": [{"fqdn": "www.example.de"}, {"fqdn": "www.example.com"}],
             "url_count": 4,
             "urls": [
                 {"url": "https://www.example.de/abcefg", "fqdn": "www.example.de"},
@@ -189,6 +191,41 @@ def test_duplicate_fqdn_submission():
     assert submission_response.status_code == status.HTTP_202_ACCEPTED
 
 
+def test_update_avg_last_visited_dates():
+    delete_db()
+    create_crawler(v.example_uuid)
+
+    db.add(
+        db_models.Frontier(
+            fqdn="www.example.com",
+            fqdn_avg_last_visited_date=datetime.utcfromtimestamp(0),
+        )
+    )
+    db.commit()
+
+    current_utc_date = datetime.now(timezone.utc)
+    db.add(
+        db_models.Url(
+            url="https://www.example.com/html1",
+            fqdn="www.example.com",
+            url_last_visited=current_utc_date,
+        )
+    )
+
+    db.commit()
+
+    submit.update_avg_last_visited_dates(
+        db, [db_models.Frontier(fqdn="www.example.com")]
+    )
+
+    assert (
+        db.query(db_models.Frontier.fqdn_avg_last_visited_date)
+        .filter(db_models.Frontier.fqdn == "www.example.com")
+        .scalar()
+        == current_utc_date
+    )
+
+
 def test_release_fqdn_reservations():
 
     create_crawler(v.example_uuid)
@@ -196,7 +233,7 @@ def test_release_fqdn_reservations():
 
     db.add(
         db_models.FetcherReservation(
-            crawler_uuid=v.example_uuid,
+            fetcher_uuid=v.example_uuid,
             fqdn="www.example.com",
             latest_return=datetime.now(tz=timezone.utc),
         )

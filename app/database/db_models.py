@@ -47,6 +47,7 @@ class Frontier(Base):
 
     fqdn_url_count = Column(Integer)
     fqdn_avg_pagerank = Column(Float)
+    fqdn_avg_last_visited_date = Column(DateTime(timezone=True))
     fqdn_crawl_delay = Column(Integer)
 
 

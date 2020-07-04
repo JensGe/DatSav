@@ -1,25 +1,18 @@
 from app.database import pyd_models, db_models
 
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import func
 from typing import List
 
 
 def fqdn_exists(db: Session, fqdn):
-    if (
-        db.query(db_models.Frontier)
-        .filter(db_models.Frontier.fqdn == fqdn)
-        .count()
-        > 0
-    ):
+    if db.query(db_models.Frontier).filter(db_models.Frontier.fqdn == fqdn).count() > 0:
         return True
     return False
 
 
 def url_exists(db: Session, url):
-    if (
-        db.query(db_models.Url).filter(db_models.Url.url == url).count()
-        > 0
-    ):
+    if db.query(db_models.Url).filter(db_models.Url.url == url).count() > 0:
         return True
     return False
 
@@ -43,8 +36,9 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
         if not fqdn_exists(db, fqdn.fqdn) and fqdn.fqdn not in [
             url.fqdn for url in fqdn_insert_list
         ]:
-            fqdn_hash_fetcher_index = hash(
-                fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
+            fqdn_hash_fetcher_index = (
+                hash(fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
+            )
             fqdn_insert_list.append(
                 db_models.Frontier(
                     fqdn=fqdn.fqdn,
@@ -136,11 +130,7 @@ def create_url_lists(db: Session, urls):
 
 def update_existing_urls(db: Session, url_update_list):
     for item in url_update_list:
-        url = (
-            db.query(db_models.Url)
-            .filter(db_models.Url.url == item.url)
-            .first()
-        )
+        url = db.query(db_models.Url).filter(db_models.Url.url == item.url).first()
 
         if item.url_pagerank is not None:
             url.url_pagerank = item.url_pagerank
@@ -156,6 +146,25 @@ def update_existing_urls(db: Session, url_update_list):
 
         if item.url_bot_excluded is not None:
             url.url_bot_excluded = item.url_bot_excluded
+
+    db.commit()
+
+
+def update_avg_last_visited_dates(db: Session, fqdn_list):
+    for fqdn in fqdn_list:
+        avg_last_visited_date = (
+            db.query(
+                func.to_timestamp(
+                    func.avg(func.extract("epoch", db_models.Url.url_last_visited))
+                )
+            )
+            .filter(db_models.Url.fqdn == fqdn.fqdn)
+            .scalar()
+        )
+
+        db.query(db_models.Frontier).filter(
+            db_models.Frontier.fqdn == fqdn.fqdn
+        ).update({"fqdn_avg_last_visited_date": avg_last_visited_date})
 
     db.commit()
 
@@ -179,5 +188,7 @@ def commit_frontier(db: Session, submission: pyd_models.SubmitFrontier):
     url_insert_list, url_update_list = create_url_lists(db, submission.urls)
     save_insert_table(db, url_insert_list)
     update_existing_urls(db, url_update_list)
+
+    update_avg_last_visited_dates(db, [*fqdn_insert_list, *fqdn_update_list])
 
     release_fqdn_reservations(db, submission.uuid, fqdn_update_list)
