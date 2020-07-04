@@ -39,14 +39,16 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
     fetcher_amount = db.query(db_models.Fetcher).count()
 
     for fqdn in fqdns:
-        fetcher_idx = hash(fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
+
         if not fqdn_exists(db, fqdn.fqdn) and fqdn.fqdn not in [
             url.fqdn for url in fqdn_insert_list
         ]:
+            fqdn_hash_fetcher_index = hash(
+                fqdn.fqdn) % fetcher_amount if fetcher_amount != 0 else None
             fqdn_insert_list.append(
                 db_models.Frontier(
                     fqdn=fqdn.fqdn,
-                    fqdn_hash_fetcher_index=fetcher_idx,
+                    fqdn_hash_fetcher_index=fqdn_hash_fetcher_index,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
@@ -60,7 +62,7 @@ def create_fqdn_lists(db: Session, fqdns: List[pyd_models.Frontier]):
             fqdn_update_list.append(
                 db_models.Frontier(
                     fqdn=fqdn.fqdn,
-                    fqdn_hash_fetcher_index=fetcher_idx,
+                    fqdn_hash_fetcher_index=fqdn.fqdn_hash_fetcher_index,
                     tld=fqdn.tld,
                     fqdn_last_ipv4=fqdn.fqdn_last_ipv4,
                     fqdn_last_ipv6=fqdn.fqdn_last_ipv6,
