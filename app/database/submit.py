@@ -191,4 +191,4 @@ def commit_frontier(db: Session, submission: pyd_models.SubmitFrontier):
 
     update_avg_last_visited_dates(db, [*fqdn_insert_list, *fqdn_update_list])
 
-    # release_fqdn_reservations(db, submission.uuid, fqdn_update_list)
+    release_fqdn_reservations(db, submission.uuid, fqdn_update_list)
